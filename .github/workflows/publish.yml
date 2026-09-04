@@ -1,0 +1,57 @@
+name: publish
+
+# Publishes to PyPI through trusted publishing: GitHub mints a short-lived OIDC token
+# that PyPI exchanges for upload rights, so no API token is stored anywhere. PyPI's
+# publisher entry names this workflow file, so renaming it breaks the trust and the
+# upload is refused.
+#
+# `release: published` covers every future version: cut a release, this uploads it.
+# `workflow_dispatch` covers a release that already exists, so a tag can be published
+# without re-cutting it — re-cutting would archive a second copy on Zenodo and mint a
+# second DOI for the same code.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "tag to build and publish"
+        required: true
+        default: "v0.1.0"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade build twine
+      - run: python -m build
+      # The same check that gates the artifacts locally. A description that PyPI would
+      # reject is caught here rather than half way through an upload.
+      - run: python -m twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write        # the OIDC token trusted publishing exchanges
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

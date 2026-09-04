@@ -1,0 +1,72 @@
+name: CI
+
+# This is NOT the workspace's own CI. The agience workspace runs `ci_runner.py` from a
+# post-receive hook on the NAS, and that is what gates a change internally. This file
+# exists because the repository is public and dual-licensed: an outside contributor opening
+# a pull request has no access to that runner, and a PR nothing checks is a PR nobody can
+# review with confidence.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:                       # cancel superseded runs on the same ref
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # numpy + entroptics + pytest, which is the whole default install. No model, no corpus,
+  # no download: every heavy import in this repository sits inside a function, and a test
+  # asserts that it does.
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        # `requires-python` is >=3.11, which is a floor rather than a promise about every
+        # version above it. 3.13 is deliberately absent: it has not been run anywhere, and
+        # a matrix entry that is red on the day it lands is how a CI badge stops being
+        # read. Add it when someone has run the suite on it once.
+        python-version: ["3.11", "3.12"]
+        include:
+          # Windows is not an afterthought here. The workspace this comes from is
+          # Windows-first, and `test_no_shadow.py` carries a guard that only a Windows
+          # console can motivate: cp1252 has no U+2190 or U+26A0, so a report using one
+          # dies with UnicodeEncodeError partway through its own output. That defect was
+          # real and shipped once.
+          - os: windows-latest
+            python-version: "3.12"
+          - os: macos-latest
+            python-version: "3.12"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - run: pytest -q
+
+  # The two guards that are the reason `engine.py` exists, run alone so a failure in them
+  # is legible in the checks list rather than buried in a 200-test summary. They are cheap
+  # and they are what stops two copies of a right formula drifting a percent apart.
+  guards:
+    name: structural guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -e ".[dev]"
+      - name: one engine, no shadow, no unprintable report
+        run: pytest -q tests/test_no_shadow.py
+      - name: every quoted number has a line in the paper
+        run: pytest -q tests/test_rule_seven.py
+      - name: no document describes a practice this code no longer has
+        run: pytest -q tests/test_prose_does_not_drift.py

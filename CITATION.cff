@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it."
+title: "Selection for language-model context, read from the data"
+abstract: "A language model's context is assembled from several sources at once: a retrieval-augmented prompt, an agent scratchpad, a long conversation. The decisions made about it -- how many retrieved items to keep, which of them to trust, whether an answer stayed on its evidence -- are conventionally made with one number per item against one summary of the whole: a cosine, a centroid, a fixed top-k. This work reads the context as the K directions it resolves above its own noise floor, using the Entroptics instrument, and makes each of those decisions from that span. K is counted from the data, so nothing is trained, no threshold is set, and no constant is fitted per corpus. Where relevance spreads across several facets the derived cut holds F1 at 1.000 while a cosine cut falls to 0.000. On locating a real prompt injection planted in real documents it leads a centroid by 0.007, 0.069, 0.131 and 0.174 AUROC at one, two, three and five sources, names the attack as the first item to inspect three times as often as a centroid does at five sources, and leads a k-nearest-neighbour detector outright at one and two sources. On deciding whether a continuation belongs to its context it leads a centroid by 0.038, 0.084 and 0.155 at two, three and five sources. One statement covers all of it: these reads beat a single summary statistic exactly when the deciding distribution is multi-modal, and the margin grows with how multi-modal it is. Where the deciding distribution has one mode they reduce to the statistic they are measured against and tie, which four BEIR corpora and an end-to-end HotpotQA run confirm. Includes the paper, the implementation, and the benchmarks that produce every figure from public corpora."
+type: software
+authors:
+  - given-names: Ikailo John
+    family-names: Sessford
+    email: john@ikailo.com
+    affiliation: Ikailo
+repository-code: "https://github.com/Agience/entroptics-llm"
+url: "https://agience.ai"
+license: AGPL-3.0-only
+version: 0.1.0
+doi: "10.5281/zenodo.22313961"
+date-released: "2026-09-04"
+keywords:
+  - retrieval-augmented generation
+  - context selection
+  - top-k
+  - prompt injection
+  - large language models
+  - grounding
+  - parameter-free
+  - singular value decomposition
+  - random matrix theory
+  - entroptics
+references:
+  - type: software
+    title: "Entroptics"
+    abstract: "Read any 2-D signal as a finite optical aperture whose resolution is fixed by the signal's own entropy."
+    authors:
+      - given-names: Ikailo John
+        family-names: Sessford
+        affiliation: Ikailo
+    version: 0.2.1
+    doi: "10.5281/zenodo.21273400"
+    repository-code: "https://github.com/Agience/entroptics"
+    license: Apache-2.0
