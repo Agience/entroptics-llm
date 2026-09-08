@@ -154,8 +154,7 @@ enforces it. The resolved-mode count that sets `K` is the library's own read —
 values standing above a noise floor derived from the data rather than assumed. See
 `research/PAPER.md` for the citation and the construction.
 
-## License
+Security issues: email **connect@agience.ai** rather than opening a public issue.
 
-**Dual-licensed: AGPL-3.0-only *or* commercial.** See [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE);
-commercial and white-label terms in [`COMMERCIAL_LICENSE.md`](COMMERCIAL_LICENSE.md).
-Contributing: [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`CLA.md`](CLA.md).
+Dual-licensed — see [`LICENSE`](LICENSE), [`COMMERCIAL_LICENSE.md`](COMMERCIAL_LICENSE.md),
+[`NOTICE`](NOTICE) and [`CLA.md`](CLA.md).
